@@ -2,17 +2,17 @@ package main
 
 import (
 	"log"
+	"wisewallet/config"
 	"wisewallet/database"
 	"wisewallet/routes"
-	"wisewallet/config"	
 )
 
 func main() {
 	config.LoadConfig()
 
-	database.RunMigration()
+	database.Init()
 
-	database.Connect()
+	database.RunMigration()
 
 	r := routes.SetupRouter()
 
