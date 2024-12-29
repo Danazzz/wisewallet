@@ -1,0 +1,417 @@
+{
+	"info": {
+		"_postman_id": "fa0fbb9c-c371-4c73-98f0-d6967b187499",
+		"name": "WiseWallet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18633327"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"John Doe\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://wisewallet-production.up.railway.app/api/auth/register",
+							"protocol": "https",
+							"host": [
+								"wisewallet-production",
+								"up",
+								"railway",
+								"app"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Get all transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a new transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"amount\": 2000000,\n  \"type\": \"expense\",\n  \"description\": \"Beli 3DS\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get transaction by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transactions/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transactions",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update transaction by ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"amount\": 10000,\n  \"type\": \"expense\",\n  \"description\": \"Beli Nasi goreng\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/transactions/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transactions",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete transaction by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transactions/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transactions",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Badges",
+			"item": [
+				{
+					"name": "Get all badges",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a badge",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Third Badge\",\n  \"criteria\": \"Not trying to do 3 expenses in 1 day\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get badge by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/badges/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"badges",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update badge by ID",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Second Badge\",\n  \"criteria\": \"Complete 10 transactions\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/badges/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"badges",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete badge by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/badges/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"badges",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User-Badge Relationships",
+			"item": [
+				{
+					"name": "Get all badges for a user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user_badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user_badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign a badge to a user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"badge_id\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/user_badges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user_badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user-badge relationship by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user_badges/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user_badges",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove a badge from a user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user_badges/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user_badges",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "admin",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "admin",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
