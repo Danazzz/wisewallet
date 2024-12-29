@@ -32,21 +32,13 @@ func CreateTransaction(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Transaction created successfully", "transaction": transaction})
 }
 
-func GetTransactions(c *gin.Context) {
-	userID := c.Query("user_id")
-
-	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "User ID is required"})
-		return
-	}
-
+func GetAllTransactions(c *gin.Context) {
 	var transactions []models.Transaction
 	query := `
 		SELECT id, user_id, amount, type, description, created_at, updated_at
 		FROM transactions
-		WHERE user_id = $1
 	`
-	rows, err := database.DB.Query(query, userID)
+	rows, err := database.DB.Query(query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve transactions", "error": err.Error()})
 		return
