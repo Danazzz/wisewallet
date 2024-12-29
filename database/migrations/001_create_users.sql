@@ -7,4 +7,4 @@ CREATE TABLE users (
 -- Insert default admin user
 -- Password 'admin' hashed memakai bcrypt
 INSERT INTO users (username, password)
-VALUES ('admin', '$2a$10$CwTycUXWue0Thq9StjUM0uJ8QlAv3Myc2m1MvBOQ.k6TrHDpQG2yW');
+VALUES ('admin', '$2a$10$i4aBpDxq76xeaK8DOiAs4ugsvctO22RpUfwexuuBKQ36US1jhZXYe');
