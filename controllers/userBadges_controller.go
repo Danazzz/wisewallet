@@ -45,12 +45,7 @@ func AddUserBadge(c *gin.Context) {
 }
 
 func GetAUserBadges(c *gin.Context) {
-	userID := c.Query("user_id")
-
-	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "User ID is required"})
-		return
-	}
+	userID := c.Param("id")
 
 	// Validasi user_id
 	var userExists bool
