@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"net/http"
-	"time"
 	"wisewallet/database"
 	"wisewallet/models"
 
