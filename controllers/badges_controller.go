@@ -98,7 +98,7 @@ func UpdateBadge(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Badge updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Badge updated successfully", "badge": badge})
 }
 
 func DeleteBadge(c *gin.Context) {
