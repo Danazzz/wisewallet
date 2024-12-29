@@ -59,51 +59,51 @@ wisewallet/
 
 **Authentication**
 
-**Endpoint**	**Method**		**Description**		**Auth Required**
+**Endpoint**			**Method**		**Description**		**Auth Required**
 
-**/register**		POST		**Register a user**	No
+**/api/auth/register**		POST		**Register a user**	No
 
-**/login**		POST		**Login a user**		No
+**/api/auth/login**		POST		**Login a user**		No
 
 **Transactions**
 
-**Endpoint**		**Method**		**Description**				**Auth Required**
+**Endpoint**			**Method**		**Description**				**Auth Required**
 
-**/transactions**	GET			**Get all transactions**		Yes
+**/api/transactions**		GET			**Get all transactions**		Yes
 
-**/transactions**	POST		**Create a new transaction**	Yes
+**/api/transactions**		POST		**Create a new transaction**	Yes
 
-**/transactions/:id**	GET			**Get transaction by ID**		Yes
+**/api/transactions/:id**	GET			**Get transaction by ID**		Yes
 
-**/transactions/:id**	PUT			**Update transaction by ID**	Yes
+**/api/transactions/:id**	PUT			**Update transaction by ID**	Yes
 
-**/transactions/:id**	DELETE		**Delete transaction by ID**	Yes
+**/api/transactions/:id**	DELETE		**Delete transaction by ID**	Yes
 
 **Badges**
 
-**Endpoint**	**Method**	**Description**			**Auth Required**
+**Endpoint**		**Method**	**Description**			**Auth Required**
 
-**/badges**		GET		**Get all badges**		Yes
+**/api/badges**		GET		**Get all badges**		Yes
 
-**/badges**		POST	**Create a badge**		Yes
+**/api/badges**		POST	**Create a badge**		Yes
 
-**/badges/:id**	GET		**Get badge by ID**		Yes
+**/api/badges/:id**	GET		**Get badge by ID**		Yes
 
-**/badges/:id**	PUT		**Update badge by ID**	Yes
+**/api/badges/:id**	PUT		**Update badge by ID**	Yes
 
-**/badges/:id**	DELETE	**Delete badge by ID**	Yes
+**/api/badges/:id**	DELETE	**Delete badge by ID**	Yes
 
 **User-Badge Relationships**
 
-**Endpoint**		**Method**	**Description**						**Auth Required**
+**Endpoint**			**Method**	**Description**						**Auth Required**
 
-**/user_badges**	GET		**Get all badges for a user**			Yes
+**/api/user_badges**		GET		**Get all badges for a user**			Yes
 
-**/user_badges**	POST	**Assign a badge to a user**			Yes
+**/api/user_badges**		POST	**Assign a badge to a user**			Yes
 
-**/user_badges/:id**	GET		**Get user-badge relationship by ID**	Yes
+**/api/user_badges/:id**	GET		**Get user-badge relationship by ID**	Yes
 
-**/user_badges/:id**	DELETE	**Remove a badge from a user**		Yes
+**/api/user_badges/:id**	DELETE	**Remove a badge from a user**		Yes
 
 **Cara Menjalankan**
 
