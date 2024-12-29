@@ -1,4 +1,11 @@
-**WiseWallet** adalah REST API berbasis Golang dengan framework Gin, menggunakan PostgreSQL sebagai database. API ini dirancang untuk melacak pengeluaran dan pemasukan pengguna, serta menambahkan elemen gamifikasi sederhana melalui pemberian badge.
+**WiseWallet** adalah REST API berbasis Golang dengan framework Gin, menggunakan PostgreSQL sebagai database. API ini dirancang untuk mencatat pengeluaran dan pemasukan pengguna, serta menambahkan elemen gamifikasi sederhana melalui pemberian badge.
+
+**Teknologi yang Digunakan**
+
+* **Bahasa Pemrograman** : Golang
+* **Framework** : Gin
+* **Database** : PostgreSQL
+* **Middleware** : Basic Auth
 
 ---
 
@@ -37,13 +44,18 @@ Mengaitkan badge ke pengguna berdasarkan pencapaian dan menggambarkannya dengan 
 
 **Automatic Migrations** : Migrasi table-table secara otomatis pada PostgreSQL.
 
-**Teknologi yang Digunakan**
+---
 
-* **Bahasa Pemrograman** : Golang
-* **Framework** : Gin
-* **Database** : PostgreSQL
-* **Deployment** : Railway
-* **Middleware** : Basic Auth
+**Testing:**
+
+Koleksi Postman untuk API WiseWallet tersedia di folder `postman/WiseWallet_API_Collection.json`.
+
+Langkah-langkah untuk menggunakan koleksi:
+
+1. Buka **Postman**.
+2. Klik **File > Import**.
+3. Pilih file `WiseWallet_API_Collection.json`.
+4. Koleksi akan tersedia di Postman untuk pengujian API.
 
 ---
 
@@ -51,9 +63,11 @@ Mengaitkan badge ke pengguna berdasarkan pencapaian dan menggambarkannya dengan 
 
 ---
 
-wisewallet/
+ wisewallet/
 
  │
+
+├──config/				# Deklarasi variable DATABASE_URL pada .env
 
 ├── controllers/			# Mengelola logic untuk setiap endpoint
 
@@ -78,7 +92,6 @@ wisewallet/
 ---
 
 **Authentication**
-
 
 | Endpoint           | Method | Description            | Auth Required |
 | ------------------ | ------ | ---------------------- | ------------- |
@@ -116,7 +129,7 @@ wisewallet/
 
 ---
 
-#### **Cara Menjalankan**
+#### **Cara Menjalankan (Lokal)**
 
 ---
 
@@ -124,16 +137,40 @@ wisewallet/
 
 git clone `<this-repository-url>`
 
-cd wisewallet
+`cd wisewallet`
 
-**2. Install Dependencies**
+**2. Sesuaikan Environment**
 
-go mod tidy
+Gunakan `.env.example`, sesuaikan dengan environment lokal.
 
-**3. Jalankan Server**
+**3. Install Dependencies**
 
-go run main.go
+`go mod tidy`
 
-Database termigrasi otomatis
+**4. Jalankan Server**
+
+`go run main.go`
+
+Database termigrasi otomatis.
 
 Server akan berjalan di port **8080**.
+
+---
+
+#### Deployment
+
+---
+
+Kalau tidak ingin menjalankan lokal, anda dapat memakai REST API ini yang terdeploy pada Railway.
+
+`https://wisewallet-production.up.railway.app`
+
+---
+
+#### **Demonstrations**
+
+---
+
+Link Youtube: https://youtu.be/OE3ZUpySnyo
+
+Link Post DEV.to: https://dev.to/danawar/final-project-golang-backend-development-sanbercode-4891
