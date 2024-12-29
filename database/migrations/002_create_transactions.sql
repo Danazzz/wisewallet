@@ -1,4 +1,4 @@
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id),
     amount NUMERIC(10, 2) NOT NULL,

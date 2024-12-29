@@ -1,4 +1,4 @@
-CREATE TABLE badges (
+CREATE TABLE IF NOT EXISTS badges (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     criteria TEXT NOT NULL
