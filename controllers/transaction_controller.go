@@ -87,7 +87,6 @@ func UpdateTransaction(c *gin.Context) {
 	id := c.Param("id")
 	var transaction models.Transaction
 
-	// Bind request data
 	if err := c.ShouldBindJSON(&transaction); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input", "error": err.Error()})
 		return
@@ -95,16 +94,28 @@ func UpdateTransaction(c *gin.Context) {
 
 	query := `
 		UPDATE transactions
-		SET amount = $1, type = $2, description = $3, updated_at = $4
-		WHERE id = $5
+		SET amount = $1, type = $2, description = $3, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $4
+		RETURNING id, user_id, amount, type, description, created_at, updated_at
 	`
-	_, err := database.DB.Exec(query, transaction.Amount, transaction.Type, transaction.Description, time.Now(), id)
+	err := database.DB.QueryRow(query, transaction.Amount, transaction.Type, transaction.Description, id).Scan(
+		&transaction.ID,
+		&transaction.UserID,
+		&transaction.Amount,
+		&transaction.Type,
+		&transaction.Description,
+		&transaction.CreatedAt,
+		&transaction.UpdatedAt,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update transaction", "error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Transaction updated successfully"})
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Transaction updated successfully",
+		"transaction": transaction,
+	})
 }
 
 func DeleteTransaction(c *gin.Context) {
