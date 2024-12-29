@@ -21,7 +21,7 @@ func CreateTransaction(c *gin.Context) {
 	query := `
 		INSERT INTO transactions (user_id, amount, type, description, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at, updated_at
+		RETURNING id
 	`
 	err := database.DB.QueryRow(query, transaction.UserID, transaction.Amount, transaction.Type, transaction.Description, time.Now(), time.Now()).Scan(&transaction.ID)
 	if err != nil {
