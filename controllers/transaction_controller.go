@@ -20,10 +20,14 @@ func CreateTransaction(c *gin.Context) {
 
 	query := `
 		INSERT INTO transactions (user_id, amount, type, description, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id
+		VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		RETURNING id, created_at, updated_at
 	`
-	err := database.DB.QueryRow(query, transaction.UserID, transaction.Amount, transaction.Type, transaction.Description, time.Now(), time.Now()).Scan(&transaction.ID)
+	err := database.DB.QueryRow(query, transaction.UserID, transaction.Amount, transaction.Type, transaction.Description).Scan(
+		&transaction.ID,
+		&transaction.CreatedAt,
+		&transaction.UpdatedAt,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create transaction", "error": err.Error()})
 		return
