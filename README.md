@@ -114,7 +114,11 @@ wisewallet/
 | /api/user_badges/:id | GET    | Dapatkan semua lencana dari pengguna       | Yes           |
 | /api/user_badges/:id | DELETE | Menghapus lencana dari pengguna            | Yes           |
 
-**Cara Menjalankan**
+---
+
+#### **Cara Menjalankan**
+
+---
 
 **1. Clone Repository**
 
