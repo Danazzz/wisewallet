@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"database/sql"
 	"net/http"
-	"strconv"
 	"time"
 	"wisewallet/database"
 	"wisewallet/models"
@@ -11,79 +11,76 @@ import (
 )
 
 func CreateTransaction(c *gin.Context) {
-	var input struct {
-		CategoryID uint    `json:"category_id" binding:"required"`
-		Amount     float64 `json:"amount" binding:"required"`
-		Type       string  `json:"type" binding:"required,oneof=income expense"`
-		Description string  `json:"description"`
-		Date       string  `json:"date" binding:"required"`
-	}
+	var transaction models.Transaction
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&transaction); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input", "error": err.Error()})
 		return
 	}
 
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	parsedDate, err := time.Parse("2006-01-02", input.Date)
+	query := `
+		INSERT INTO transactions (user_id, amount, type, description, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id
+	`
+	err := database.DB.QueryRow(query, transaction.UserID, transaction.Amount, transaction.Type, transaction.Description, time.Now(), time.Now()).Scan(&transaction.ID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format (use YYYY-MM-DD)"})
-		return
-	}
-
-	transaction := models.Transaction{
-		UserID:      userID.(uint),
-		CategoryID:  input.CategoryID,
-		Amount:      input.Amount,
-		Type:        input.Type,
-		Description: input.Description,
-		Date:        parsedDate,
-	}
-	if err := database.DB.Create(&transaction).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create transaction"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create transaction", "error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Transaction created successfully", "transaction": transaction})
 }
 
-func GetAllTransactions(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+func GetTransactions(c *gin.Context) {
+	userID := c.Query("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User ID is required"})
 		return
 	}
 
 	var transactions []models.Transaction
-	if err := database.DB.Where("user_id = ?", userID.(uint)).Find(&transactions).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch transactions"})
+	query := `
+		SELECT id, user_id, amount, type, description, created_at, updated_at
+		FROM transactions
+		WHERE user_id = $1
+	`
+	rows, err := database.DB.Query(query, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve transactions", "error": err.Error()})
 		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var transaction models.Transaction
+		err := rows.Scan(&transaction.ID, &transaction.UserID, &transaction.Amount, &transaction.Type, &transaction.Description, &transaction.CreatedAt, &transaction.UpdatedAt)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse transaction data", "error": err.Error()})
+			return
+		}
+		transactions = append(transactions, transaction)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"transactions": transactions})
 }
 
 func GetTransactionByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
-		return
-	}
+	id := c.Param("id")
 
 	var transaction models.Transaction
-	if err := database.DB.First(&transaction, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
+	query := `
+		SELECT id, user_id, amount, type, description, created_at, updated_at
+		FROM transactions
+		WHERE id = $1
+	`
+	err := database.DB.QueryRow(query, id).Scan(&transaction.ID, &transaction.UserID, &transaction.Amount, &transaction.Type, &transaction.Description, &transaction.CreatedAt, &transaction.UpdatedAt)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Transaction not found"})
 		return
-	}
-
-	userID, exists := c.Get("user_id")
-	if !exists || transaction.UserID != userID.(uint) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve transaction", "error": err.Error()})
 		return
 	}
 
@@ -91,75 +88,36 @@ func GetTransactionByID(c *gin.Context) {
 }
 
 func UpdateTransaction(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
-		return
-	}
-
-	var input struct {
-		CategoryID  uint    `json:"category_id"`
-		Amount      float64 `json:"amount"`
-		Type        string  `json:"type" binding:"oneof=income expense"`
-		Description string  `json:"description"`
-		Date        string  `json:"date"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
+	id := c.Param("id")
 	var transaction models.Transaction
-	if err := database.DB.First(&transaction, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
+
+	// Bind request data
+	if err := c.ShouldBindJSON(&transaction); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input", "error": err.Error()})
 		return
 	}
 
-	if input.CategoryID != 0 {
-		transaction.CategoryID = input.CategoryID
-	}
-	if input.Amount != 0 {
-		transaction.Amount = input.Amount
-	}
-	if input.Type != "" {
-		transaction.Type = input.Type
-	}
-	if input.Description != "" {
-		transaction.Description = input.Description
-	}
-	if input.Date != "" {
-		parsedDate, err := time.Parse("2006-01-02", input.Date)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format (use YYYY-MM-DD)"})
-			return
-		}
-		transaction.Date = parsedDate
-	}
-
-	if err := database.DB.Save(&transaction).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update transaction"})
+	query := `
+		UPDATE transactions
+		SET amount = $1, type = $2, description = $3, updated_at = $4
+		WHERE id = $5
+	`
+	_, err := database.DB.Exec(query, transaction.Amount, transaction.Type, transaction.Description, time.Now(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update transaction", "error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Transaction updated successfully", "transaction": transaction})
+	c.JSON(http.StatusOK, gin.H{"message": "Transaction updated successfully"})
 }
 
 func DeleteTransaction(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
+
+	query := `DELETE FROM transactions WHERE id = $1`
+	_, err := database.DB.Exec(query, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
-		return
-	}
-
-	var transaction models.Transaction
-	if err := database.DB.First(&transaction, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
-		return
-	}
-
-	if err := database.DB.Delete(&transaction).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete transaction"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete transaction", "error": err.Error()})
 		return
 	}
 

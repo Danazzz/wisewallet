@@ -1,10 +1,9 @@
 package controllers
 
 import (
+	"database/sql"
 	"net/http"
-	"time"
 	"wisewallet/database"
-	"wisewallet/middleware"
 	"wisewallet/models"
 
 	"github.com/gin-gonic/gin"
@@ -12,30 +11,23 @@ import (
 )
 
 func RegisterUser(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required,min=6"`
-	}
+	var user models.User
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input", "error": err.Error()})
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to hash password"})
 		return
 	}
+	user.Password = string(hashedPassword)
 
-	user := models.User{
-		Username: input.Username,
-		Email:    input.Email,
-		Password: string(hashedPassword),
-	}
-	if err := database.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+	_, err = database.DB.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", user.Username, user.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to register user", "error": err.Error()})
 		return
 	}
 
@@ -44,35 +36,30 @@ func RegisterUser(c *gin.Context) {
 
 func LoginUser(c *gin.Context) {
 	var input struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required"`
+		Username string `json:"username"`
+		Password string `json:"password"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid input", "error": err.Error()})
 		return
 	}
 
 	var user models.User
-	if err := database.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+	row := database.DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", input.Username)
+	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid username or password"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Database error", "error": err.Error()})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid username or password"})
 		return
 	}
 
-	token, err := middleware.GenerateJWT(user.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
-		"token":   token,
-		"expires": time.Now().Add(24 * time.Hour).Unix(),
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }

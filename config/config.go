@@ -5,19 +5,17 @@ import (
 	"os"
 )
 
-var (
+type Config struct {
 	DatabaseURL string
-	JWTSecret   string
-)
+}
 
-func LoadConfig() {
-	DatabaseURL = os.Getenv("DATABASE_URL")
-	JWTSecret = os.Getenv("JWT_SECRET")
-
-	if DatabaseURL == "" {
-		log.Fatal("DATABASE_URL is not set in the environment variables")
+func LoadConfig() *Config {
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is not set")
 	}
-	if JWTSecret == "" {
-		log.Fatal("JWT_SECRET is not set in the environment variables")
+
+	return &Config{
+		DatabaseURL: databaseURL,
 	}
 }

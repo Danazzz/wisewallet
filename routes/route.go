@@ -1,37 +1,33 @@
 package routes
 
 import (
-	"wisewallet/controllers"
-	"wisewallet/middleware"
-
 	"github.com/gin-gonic/gin"
+	"wisewallet/controllers"
+	"wisewallet/middlewares"
+	"wisewallet/config"
 )
 
-func SetupRouter() *gin.Engine {
-	r := gin.Default()
+func SetupRoutes(router *gin.Engine, cfg *config.Config) {
+	router.POST("/register", controllers.RegisterUser)
+	router.POST("/login", controllers.LoginUser)
 
-	r.POST("/api/auth/login", controllers.LoginUser)
-	r.POST("/api/auth/register", controllers.RegisterUser)
-
-	api := r.Group("/api")
-	api.Use(middleware.JWTAuthMiddleware())
+	auth := router.Group("/")
+	auth.Use(middlewares.BasicAuthMiddleware())
 	{
-		api.GET("/transactions", controllers.GetAllTransactions)
-		api.POST("/transactions", controllers.CreateTransaction)
-		api.GET("/transactions/:id", controllers.GetTransactionByID)
-		api.PUT("/transactions/:id", controllers.UpdateTransaction)
-		api.DELETE("/transactions/:id", controllers.DeleteTransaction)
+		auth.GET("/transactions", controllers.GetTransactions)
+		auth.POST("/transactions", controllers.CreateTransaction)
+		auth.GET("/transactions/:id", controllers.GetTransactionByID)
+		auth.PUT("/transactions/:id", controllers.UpdateTransaction)
+		auth.DELETE("/transactions/:id", controllers.DeleteTransaction)
 
-		api.GET("/categories", controllers.GetAllCategories)
-		api.POST("/categories", controllers.CreateCategory)
-		api.GET("/categories/:id", controllers.GetCategoryByID)
-		api.PUT("/categories/:id", controllers.UpdateCategory)
-		api.DELETE("/categories/:id", controllers.DeleteCategory)
+		auth.GET("/badges", controllers.GetBadges)
+		auth.POST("/badges", controllers.CreateBadge)
+		auth.GET("/badges/:id", controllers.GetBadgeByID)
+		auth.PUT("/badges/:id", controllers.UpdateBadge)
+		auth.DELETE("/badges/:id", controllers.DeleteBadge)
 
-		api.GET("/gamification", controllers.GetGamification)
-		api.POST("/gamification/points", controllers.UpdatePoints)
-		api.POST("/gamification/badges", controllers.AddBadge)
+		auth.POST("/user_badges", controllers.AddUserBadge)
+		auth.GET("/user_badges", controllers.GetUserBadges)
+		auth.DELETE("/user_badges/:id", controllers.DeleteUserBadge)
 	}
-
-	return r
 }

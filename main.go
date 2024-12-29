@@ -1,23 +1,21 @@
 package main
 
 import (
-	"log"
 	"wisewallet/config"
 	"wisewallet/database"
 	"wisewallet/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	config.LoadConfig()
+	cfg := config.LoadConfig()
 
-	database.Init()
+	database.ConnectDatabase(cfg)
 
-	database.RunMigration()
+	router := gin.Default()
 
-	r := routes.SetupRouter()
+	routes.SetupRoutes(router, cfg)
 
-	log.Println("Server is running...")
-	if err := r.Run(); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	router.Run(":8080")
 }
