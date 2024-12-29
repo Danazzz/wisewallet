@@ -27,8 +27,8 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 		auth.DELETE("/badges/:id", controllers.DeleteBadge)
 
 		auth.POST("/user_badges", controllers.AddUserBadge)
-		auth.GET("/user_badges", controllers.GetUserBadges)
-		auth.GET("/user_badges/:id", controllers.GetUserBadgeByID)
+		auth.GET("/user_badges", controllers.GetAllUserBadges)
+		auth.GET("/user_badges/:id", controllers.GetAUserBadges)
 		auth.DELETE("/user_badges/:id", controllers.DeleteUserBadge)
 	}
 }

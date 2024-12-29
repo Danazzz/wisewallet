@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"net/http"
 	"wisewallet/database"
 	"wisewallet/models"
@@ -17,12 +16,26 @@ func AddUserBadge(c *gin.Context) {
 		return
 	}
 
+	var userExists bool
+	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", userBadge.UserID).Scan(&userExists)
+	if err != nil || !userExists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User not found"})
+		return
+	}
+
+	var badgeExists bool
+	err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM badges WHERE id = $1)", userBadge.BadgeID).Scan(&badgeExists)
+	if err != nil || !badgeExists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Badge not found"})
+		return
+	}
+
 	query := `
 		INSERT INTO user_badges (user_id, badge_id)
 		VALUES ($1, $2)
 		RETURNING id
 	`
-	err := database.DB.QueryRow(query, userBadge.UserID, userBadge.BadgeID).Scan(&userBadge.ID)
+	err = database.DB.QueryRow(query, userBadge.UserID, userBadge.BadgeID).Scan(&userBadge.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to assign badge to user", "error": err.Error()})
 		return
@@ -31,11 +44,19 @@ func AddUserBadge(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Badge assigned successfully", "user_badge": userBadge})
 }
 
-func GetUserBadges(c *gin.Context) {
+func GetAUserBadges(c *gin.Context) {
 	userID := c.Query("user_id")
 
 	if userID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "User ID is required"})
+		return
+	}
+
+	// Validasi user_id
+	var userExists bool
+	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", userID).Scan(&userExists)
+	if err != nil || !userExists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User not found"})
 		return
 	}
 
@@ -74,9 +95,7 @@ func GetUserBadges(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user_badges": userBadges})
 }
 
-func GetUserBadgeByID(c *gin.Context) {
-	id := c.Param("id")
-
+func GetAllUserBadges(c *gin.Context) {
 	type UserBadgeWithDetails struct {
 		ID       int    `json:"id"`
 		UserID   int    `json:"user_id"`
@@ -85,30 +104,44 @@ func GetUserBadgeByID(c *gin.Context) {
 		Criteria string `json:"criteria"`
 	}
 
-	var userBadge UserBadgeWithDetails
+	var userBadges []UserBadgeWithDetails
 	query := `
 		SELECT ub.id, ub.user_id, ub.badge_id, b.name AS badge_name, b.criteria
 		FROM user_badges ub
 		INNER JOIN badges b ON ub.badge_id = b.id
-		WHERE ub.id = $1
 	`
-	err := database.DB.QueryRow(query, id).Scan(&userBadge.ID, &userBadge.UserID, &userBadge.BadgeID, &userBadge.BadgeName, &userBadge.Criteria)
-	if err == sql.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{"message": "User badge not found"})
-		return
-	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve user badge", "error": err.Error()})
+	rows, err := database.DB.Query(query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve user badges", "error": err.Error()})
 		return
 	}
+	defer rows.Close()
 
-	c.JSON(http.StatusOK, gin.H{"user_badge": userBadge})
+	for rows.Next() {
+		var userBadge UserBadgeWithDetails
+		err := rows.Scan(&userBadge.ID, &userBadge.UserID, &userBadge.BadgeID, &userBadge.BadgeName, &userBadge.Criteria)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user badge data", "error": err.Error()})
+			return
+		}
+		userBadges = append(userBadges, userBadge)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user_badges": userBadges})
 }
 
 func DeleteUserBadge(c *gin.Context) {
 	id := c.Param("id")
 
+	var exists bool
+	err := database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM user_badges WHERE id = $1)", id).Scan(&exists)
+	if err != nil || !exists {
+		c.JSON(http.StatusNotFound, gin.H{"message": "User badge not found"})
+		return
+	}
+
 	query := `DELETE FROM user_badges WHERE id = $1`
-	_, err := database.DB.Exec(query, id)
+	_, err = database.DB.Exec(query, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete user badge", "error": err.Error()})
 		return
